@@ -11,6 +11,12 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+var defaultCorsHeaders = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'access-control-allow-headers': 'content-type, accept',
+  'access-control-max-age': 10 // Seconds.
+};
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -33,33 +39,70 @@ var requestHandler = function(request, response) {
 
 
   // The outgoing status.
-  response.statusCode = 200;
+  let statusCode = 200;
+  let headers = defaultCorsHeaders;
+  headers['Content-Type'] = 'application/json';
 
   // See the note below about CORS headers.
   // var headers = defaultCorsHeaders;
-  const { headers, method, url } = request;
-  request.headers = defaultCorsHeaders;
-  let body = [];
-  request.on('error', (err) => {
-    console.error(err);
-  }).on('data', (chunk) => {
-    body.push(chunk);
-  }).on('end', () => {
-    body = Buffer.concat(body).toString();
-  }).on('GET', (data) => {
-    request.end(JSON.stringify(data))
-  });
+  // let headers = defaultCorsHeaders;
+  // headers = defaultCorsHeaders;
+  let results = [];
 
 
   // Tell the client we are sending them plain text.
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  request.headers['Content-Type'] = 'application/json';  //'text/plain';
+   //'text/plain';
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
-  response.writeHead(response.statusCode, headers);
+  // response.writeHead(response.statusCode, headers);
+
+  if(request.method === 'GET') {
+    if(!request.url.includes('/classes/messages')) {
+      statusCode = 404;
+      console.log('here')
+      response.end()
+    } else {
+      request.on('data', (data) => {
+        results.push(data);
+      }).on('end', () => {
+        results = Buffer.concat(results).toString();
+      });
+      response.writeHead(statusCode, headers)
+      let responseBody = {
+        results: results
+      }
+      response.end(JSON.stringify(responseBody));
+        // response.end('Hello, World!');
+        console.log('here')
+
+
+    }
+  }
+
+  if(request.method === 'POST') {
+    if(!request.url.includes('/classes/messages')) {
+      statusCode = 404;
+      response.writeHead(statusCode, headers)
+      response.end()
+    } else {
+      request.on('data', (data) => {
+        results.push(JSON.parse(data));
+      }).on('end', () => {
+        results = Buffer.concat(results).toString();
+      });
+
+      const responseBody = { headers, method, url, results };
+      response.end(JSON.stringify(responseBody));
+
+    }
+  }
+
+
+
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
@@ -80,11 +123,5 @@ var requestHandler = function(request, response) {
 //
 // Another way to get around this restriction is to serve you chat
 // client from this domain by setting up static file serving.
-var defaultCorsHeaders = {
-  'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'access-control-allow-headers': 'content-type, accept',
-  'access-control-max-age': 10 // Seconds.
-};
 
 exports.requestHandler = requestHandler;
