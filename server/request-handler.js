@@ -68,7 +68,12 @@ var requestHandler = function(request, response) {
     response.writeHead(statusCode, headers);
     response.end();
   }
-  
+
+  if (request.method === 'OPTIONS') {
+    response.writeHead(200, headers);
+    response.end();
+  }
+
   if (request.method === 'GET') {
     // if (!request.url.includes('/classes/messages')) {
     //   statusCode = 404;
@@ -81,14 +86,16 @@ var requestHandler = function(request, response) {
 
   if (request.method === 'POST') {
     statusCode = 201;
-    console.log('we \'re in post');
+
     let mailbox = [];
     request.on('data', (data) => {
+      console.log('we \'re in post', data);
       mailbox.push(data);
     }).on('end', () => {
       mailbox = Buffer.concat(mailbox).toString();
       results.results.push(JSON.parse(mailbox));
       response.writeHead(statusCode, headers);
+      console.log('we \'re in end', results);
     });
     response.end(JSON.stringify(results));
   }
@@ -103,7 +110,7 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end('Hello, World!');
+  // response.end('Hello, World!');
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
