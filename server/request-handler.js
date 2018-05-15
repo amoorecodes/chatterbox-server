@@ -22,6 +22,8 @@ let results = {
   results: []
 };
 
+const fs = require('fs');
+
 var requestHandler = function(request, response) {
 
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
@@ -30,6 +32,13 @@ var requestHandler = function(request, response) {
   let headers = defaultCorsHeaders;
   headers['Content-Type'] = 'application/json';
 
+  // if(response.url = 'http://127.0.0.1:3000') {
+  //   fs.readFile('../client/index.html', (err) => {
+  //     if(err) throw err;
+  //   });
+  //   response.end();
+  // }
+
   if (request.url !== '/classes/messages') {
     statusCode = 404;
     response.writeHead(statusCode, headers);
@@ -37,6 +46,7 @@ var requestHandler = function(request, response) {
   }
 
   if (request.method === 'OPTIONS') {
+    console.log(this);
     response.writeHead(200, headers);
     response.end();
   }
