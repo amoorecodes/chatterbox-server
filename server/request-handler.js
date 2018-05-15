@@ -19,10 +19,14 @@ var defaultCorsHeaders = {
 };
 
 let results = {
-  results: []
+  results: [{
+    username: 'Holly',
+    roomname: 'lobby',
+    text: 'this is a first message'
+  }]
 };
 
-const fs = require('fs');
+// const fs = require('fs');
 
 var requestHandler = function(request, response) {
 
@@ -39,14 +43,14 @@ var requestHandler = function(request, response) {
   //   response.end();
   // }
 
-  if (request.url !== '/classes/messages') {
+  if (!request.url.includes('/classes/messages')) {
     statusCode = 404;
     response.writeHead(statusCode, headers);
     response.end();
   }
 
   if (request.method === 'OPTIONS') {
-    console.log(this);
+    // console.log(this);
     response.writeHead(200, headers);
     response.end();
   }
@@ -59,11 +63,10 @@ var requestHandler = function(request, response) {
   if (request.method === 'POST') {
     statusCode = 201;
 
-    let mailbox = [];
+    let mailbox = '';
     request.on('data', (data) => {
-      mailbox.push(data);
+      mailbox += data;
     }).on('end', () => {
-      mailbox = Buffer.concat(mailbox).toString();
       results.results.push(JSON.parse(mailbox));
     });
     response.writeHead(statusCode, headers);

@@ -1,7 +1,7 @@
 /* Import node's http module: */
 var http = require('http');
 
-const fs = require('fs');
+// const fs = require('fs');
 
 
 // Every server needs to listen on a port with a unique number. The
@@ -42,4 +42,4 @@ server.listen(port, ip);
 // possibility of serving more requests. To stop your server, hit
 // Ctrl-C on the command line.
 
-exports.fs = fs;
+// exports.fs = fs;
