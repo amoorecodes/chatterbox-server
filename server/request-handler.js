@@ -18,6 +18,10 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
+let results = {
+  results: []
+};
+
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -47,58 +51,46 @@ var requestHandler = function(request, response) {
   // var headers = defaultCorsHeaders;
   // let headers = defaultCorsHeaders;
   // headers = defaultCorsHeaders;
-  let results = [];
 
 
   // Tell the client we are sending them plain text.
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-   //'text/plain';
+  //'text/plain';
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
   // response.writeHead(response.statusCode, headers);
 
-  if(request.method === 'GET') {
-    if(!request.url.includes('/classes/messages')) {
-      statusCode = 404;
-      console.log('here')
-      response.end()
-    } else {
-      request.on('data', (data) => {
-        results.push(data);
-      }).on('end', () => {
-        results = Buffer.concat(results).toString();
-      });
-      response.writeHead(statusCode, headers)
-      let responseBody = {
-        results: results
-      }
-      response.end(JSON.stringify(responseBody));
-        // response.end('Hello, World!');
-        console.log('here')
-
-
-    }
+  if (request.url !== '/classes/messages') {
+    statusCode = 404;
+    response.writeHead(statusCode, headers);
+    response.end();
+  }
+  
+  if (request.method === 'GET') {
+    // if (!request.url.includes('/classes/messages')) {
+    //   statusCode = 404;
+    //   response.writeHead(statusCode, headers);
+    //   response.end();
+    // } else {
+    response.writeHead(statusCode, headers);
+    response.end(JSON.stringify(results));
   }
 
-  if(request.method === 'POST') {
-    if(!request.url.includes('/classes/messages')) {
-      statusCode = 404;
-      response.writeHead(statusCode, headers)
-      response.end()
-    } else {
-      request.on('data', (data) => {
-        results.push(JSON.parse(data));
-      }).on('end', () => {
-        results = Buffer.concat(results).toString();
-      });
-
-      const responseBody = { headers, method, url, results };
-      response.end(JSON.stringify(responseBody));
-
-    }
+  if (request.method === 'POST') {
+    statusCode = 201;
+    console.log('we \'re in post');
+    let mailbox = [];
+    request.on('data', (data) => {
+      mailbox.push(data);
+    }).on('end', () => {
+      mailbox = Buffer.concat(mailbox).toString();
+      results.results.push(JSON.parse(mailbox));
+      response.writeHead(statusCode, headers);
+    });
+    response.end(JSON.stringify(results));
   }
 
 
